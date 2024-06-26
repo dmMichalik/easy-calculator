@@ -1,0 +1,116 @@
+SIN(5)
+0.96
+sin(cos(x))
+graf : sin(cos(x))
+sin(tan(x))
+graf : sin(tan(x))
+sin(x**tan(x))
+graf : sin(x**tan(x))
+tan(X)
+graf : tan(X)
+tan(x)
+graf : tan(x)
+tan(x)*cot(x)
+graf : tan(x)*cot(x)
+tan(x)
+graf : tan(x)
+tan(x)/cot(x)
+graf : tan(x)/cot(x)
+cot(x)/tan(x)
+graf : cot(x)/tan(x)
+tan(x**2)
+graf : tan(x**2)
+csc(x**2)
+graf : csc(x**2)
+csc(x**2+10)
+graf : csc(x**2+10)
+csc(x**2+1)
+graf : csc(x**2+1)
+csc(x**2+1)
+graf : csc(x**2+1)
+csc(x**2)
+graf : csc(x**2)
+tan(x)
+graf : tan(x)
+tan(x)+1
+graf : tan(x)+1
+tan(x)+20
+graf : tan(x)+20
+tan(x)/2
+graf : tan(x)/2
+tan(x)/x
+graf : tan(x)/x
+tan(x)/x**2
+graf : tan(x)/x**2
+tan(x)/x**2
+graf : tan(x)/x**2
+tan(x)/x**2
+graf : tan(x)/x**2
+sin(x)/x
+graf : sin(x)/x
+sin(x)/x
+graf : sin(x)/x
+sin(x)/x**2
+graf : sin(x)/x**2
+sin(2rootx
+graf : sin(2rootx
+sin(2rootx)
+graf : sin(2rootx)
+sin(2rootx)
+graf : sin(2rootx)
+sin(2rootx)
+graf : sin(2rootx)
+sin(abs(x))
+graf : sin(abs(x))
+sin(x)
+graf : sin(x)
+sin(round(x))
+graf : sin(round(x))
+sin(round(x))
+graf : sin(round(x))
+sin(round(x)/x)
+graf : sin(round(x)/x)
+sin((x)/x)
+graf : sin((x)/x)
+sin(round(x)/x)
+graf : sin(round(x)/x)
+round(x)/x
+graf : round(x)/x
+round(x)/x
+graf : round(x)/x
+round(x)/x*2
+graf : round(x)/x*2
+round(x)/x
+graf : round(x)/x
+round(x)/x+0.6688
+graf : round(x)/x+0.6688
+round(x)/x*5
+graf : round(x)/x*5
+!(round(x))
+graf : !(round(x))
+!(11)
+39916800.0
+!(11)
+39916800.0
+!(5)
+0.0
+!(5)
+120.0
+!(5)
+120.0
+!(500)
+inf
+!(250)
+inf
+!(100)
+9.33262154439441* 10 **+157
+!(100)
+9.33262154439441* exp+157
+9.33262154439441* exp(157)
+9.33262154439441* exp+157
+e**(πj)
+-1.0
+e**π
+23.14
+e**(3j)
+0.99 + 0.14j 
