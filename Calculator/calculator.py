@@ -1,31 +1,71 @@
 from tkinter import *
-from math import *
+from cmath import *
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import messagebox
+from tkinter.colorchooser import askcolor
 import re
 
 
-def plot_graph(y_function, x_min=-100, x_max=100, body_1cm=100, skip=False):
-    body = (abs(x_min) + abs(x_max) * body_1cm)
-    x = np.linspace(x_min, x_max, body)
-    y = []
 
-    for val in x:
-        try:
-            y_value = zaklady_pocitania(y_function.replace('x', f'({val})'))
+def plot_graph(x_min=-100.00, x_max=100.00, body_1cm=100.00, skip=False , show_imag=True , show_txt=True):
+    global graphs, functions, colors
+    graphs = []
+    body = (abs(x_min) + abs(x_max)) * body_1cm
+    x = np.linspace(x_min, x_max, int(body))
+    for idx, y_function in enumerate(functions):
+        y_real = []
+        y_imag = []
+        has_complex = False
+        for val in x:
+            try:
+                y_value = moj_eval(y_function.replace('x', f'({val})'))
+                if isinstance(y_value, complex):
+                    if round(float(y_value.imag), 10) != 0:
+                        has_complex = True
+                    y_real.append(round(float(y_value.real), 10))
+                    y_imag.append(round(float(y_value.imag), 10))
+                else:
+                    y_real.append(float(y_value))
+                    y_imag.append(0)
+                if skip and abs(y_real[-1]) > 50:
+                    y_real[-1] = np.nan
+                if skip and abs(y_imag[-1]) > 50:
+                    y_imag[-1] = np.nan
+            except Exception:
+                y_real.append(np.nan)
+                y_imag.append(np.nan)
 
-            if skip and abs(y_value) > 50:
-                y.append(np.nan)
-            else:
-                y.append(y_value)
-        except Exception:
-            y.append(np.nan)
+        y_real = np.array(y_real)
+        y_imag = np.array(y_imag)
+        if not show_imag :
+            has_complex = False
+        graphs.append((x, y_real, y_imag, y_function, has_complex))
 
-    y = np.array(y)
+        with open("historia.txt", "a", encoding='utf-8') as file:
+            try:
+                file.write(y_function + "\n")
+                file.write(f"graf : {y_function}" + "\n")
+            except Exception:
+                y_function = moj_filter(y_function, "str")
+                file.write(y_function + "\n")
+                file.write(f"graf : {y_function}" + "\n")
+
 
     plt.figure(figsize=(10, 6))
-    plt.plot(x, y, label=f"y = {y_function}")
+    for idx, graph in enumerate(graphs):
+        x, y_real, y_imag, y_function, has_complex = graph
+        color = colors[idx] if idx < len(colors) else 'b'
+        if show_txt:
+            plt.plot(x, y_real, label=f"Real part of y = {y_function}", color=color)
+            if has_complex:
+                plt.plot(x, y_imag, label=f"Imaginary part of y = {y_function}", linestyle='--', color=color)
+        else:
+            plt.plot(x, y_real, color=color)
+            if has_complex:
+                plt.plot(x, y_imag, linestyle='--', color=color)
+
     plt.xlabel("x")
     plt.ylabel("y")
     plt.axhline(0, color='black', linewidth=0.5)
@@ -35,32 +75,22 @@ def plot_graph(y_function, x_min=-100, x_max=100, body_1cm=100, skip=False):
     plt.xlim(-10, 10)
     plt.legend()
     plt.show()
-    for top in his_top:
-        top.destroy()
-    with open("historia.txt", "a",encoding='utf-8') as file:
-        try:
-            file.write(y_function + "\n")
-            file.write(f"graf : {y_function}" + "\n")
-        except Exception:
-            y_function = filter_2(y_function, "str")
-            file.write(y_function + "\n")
-            file.write(f"graf : {y_function}" + "\n")
-
 
 def graf_prenos():
     try:
-        y_function = y_equals.get()  #
         skip = skip_b.get()
-        x_min = int(sb_min.get())
-        x_max = int(sb_max.get())
-        body_1cm = int(pocet_bodov_sb.get())
-        plot_graph(y_function, x_min, x_max, body_1cm, skip=skip)
+        x_min = float(sb_min.get())
+        x_max = float(sb_max.get())
+        body_1cm = float(pocet_bodov_sb.get())
+
+        plot_graph(x_min, x_max, body_1cm, skip=skip , show_imag= checkvar_imag.get() , show_txt= checkvar_txt.get())
     except Exception:
         pass
 
-
 def graf_root():
-    global y_equals, skip_b, sb_min, sb_max, pocet_bodov_sb
+    global y_equals, skip_b, sb_min, sb_max, pocet_bodov_sb, functions, graphs, checkvar_imag , checkvar_txt
+    graphs = []
+    functions = []
     top = Toplevel(root)
     top.title("Grafer")
     top.configure(bg="#282c34")
@@ -70,43 +100,70 @@ def graf_root():
                      fg="#282c34")
     y_equals.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
-    Label(top, text="x_min:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=1, column=0, padx=5, pady=5,
-                                                                                 sticky="w")
+    checkvar_imag = BooleanVar()
+    chk_imag = Checkbutton(top, text="show imag", font=('Arial', 20), bg="#282c34",
+                                  fg="white", selectcolor="#61afef", variable=checkvar_imag)
+    chk_imag.grid(row=0, column=5, padx=10, pady=10, sticky="nsew")
 
+    checkvar_txt = BooleanVar()
+    chk_txt = Checkbutton(top, text="show txt", font=('Arial', 20), bg="#282c34",
+                           fg="white", selectcolor="#61afef", variable=checkvar_txt)
+    chk_txt.grid(row=1, column=5, padx=10, pady=10, sticky="nsew")
+
+    skip_b = BooleanVar()
+    skip_check = Checkbutton(top, text="skip", variable=skip_b, font=('Arial', 20),bg="#282c34",
+                             fg="white", selectcolor="#61afef")
+    skip_check.grid(row=2, column=5, padx=5, pady=5, sticky="nsew")
+
+    Label(top, text="x_min:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=1, column=0, padx=5, pady=5, sticky="w")
     sb_min = Spinbox(top, from_=-1000, to=1000, font=('Arial', 20), width=3, justify="center")
     sb_min.grid(row=1, column=1, padx=5, pady=5, sticky="nsew")
     sb_min.delete(0, END)
     sb_min.insert(0, "-10")
 
-    Label(top, text="x_max:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=2, column=0, padx=5, pady=5,
-                                                                                 sticky="w")
-
+    Label(top, text="x_max:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=2, column=0, padx=5, pady=5, sticky="w")
     sb_max = Spinbox(top, from_=-1000, to=1000, font=('Arial', 20), width=3, justify="center")
     sb_max.grid(row=2, column=1, padx=5, pady=5, sticky="nsew")
     sb_max.delete(0, END)
     sb_max.insert(0, "10")
 
-    Label(top, text="Body v 1cm:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=3, column=0, padx=5, pady=5,
-                                                                                      sticky="w")
-
+    Label(top, text="Body v 1cm:", font=('Arial', 20), bg="#282c34", fg="white").grid(row=3, column=0, padx=5, pady=5, sticky="w")
     pocet_bodov_sb = Spinbox(top, from_=-10000, to=10000, font=('Arial', 20), width=3, justify="center")
     pocet_bodov_sb.grid(row=3, column=1, padx=5, pady=5, sticky="nsew")
     pocet_bodov_sb.delete(0, END)
     pocet_bodov_sb.insert(0, "100")
 
-    skip_b = BooleanVar()
-    skip_check = Checkbutton(top, text="preskoč velke hodnoty ", variable=skip_b, font="Arial 15", bg="#282c34",
-                             fg="#61afef", selectcolor="#282c34")
-    skip_check.grid(row=4, column=1, padx=5, pady=5, sticky="nsew")
-
     btn = Button(top, text="Graf", font=('Arial', 20), bg="#61afef", fg="white", bd=0, relief="raised",
                  command=graf_prenos)
     btn.grid(row=4, column=0, padx=5, pady=5, sticky="nsew")
 
+    add_button = Button(top, text="Add", font=('Arial', 20), bg="#61afef", fg="white", bd=0, relief="raised", command=add)
+    add_button.grid(row=4, column=1, padx=5, pady=5, sticky="nsew")
+
+    del_button = Button(top, text="del", font=('Arial', 20), bg="#61afef", fg="white", bd=0, relief="raised", command=delete)
+    del_button.grid(row=5, column=0, padx=5, pady=5, sticky="nsew")
+
+    color_button = Button(top, text="Pick Color", font=('Arial', 20), bg="#61afef", fg="white", bd=0, relief="raised",
+                          command=pick_color)
+    color_button.grid(row=5, column=1, padx=5, pady=5, sticky="nsew")
+
     top.grid_columnconfigure(0, weight=1)
     top.grid_columnconfigure(1, weight=1)
 
+def add():
+    global functions
+    functions.append(y_equals.get())
 
+def delete():
+    global functions, colors
+    functions = []
+    colors = []
+
+def pick_color():
+    global colors
+    color_code = askcolor(title="Choose color")[1]
+    if color_code:
+        colors.append(color_code)
 def cot(x):
     return 1 / tan(x)
 
@@ -203,9 +260,9 @@ def start():
         postup.append(priklad)
         decimals = int(spinbox.get())
         try:
-            result = str(round(zaklady_pocitania(priklad), decimals))
+            result = str(round(moj_eval(priklad), decimals))
         except Exception:
-            result = np.array(zaklady_pocitania(priklad))
+            result = np.array(moj_eval(priklad))
             real_part = round(float(result.real) , decimals)
             imaginary_part = round(float(result.imag) , decimals)
             if real_part == 0 and imaginary_part == 0 :
@@ -230,7 +287,7 @@ def start():
                 file.write(str(priklad) + "\n")
                 file.write(str(result) + "\n")
             except Exception:
-                priklad = filter_2(priklad, "str")
+                priklad = moj_filter(priklad, "str")
                 file.write(str(priklad) + "\n")
                 file.write(str(result) + "\n")
 
@@ -298,7 +355,7 @@ def pocitaj(casti):
     return SyntaxError("je problem v priklade , možno si tam omilom vložil nepočitatelne znaky alebo pismena ")
 
 
-def filter_2(priklad, mode="list"):
+def moj_filter(priklad, mode="list"):
     pred = sorted(premena.keys(), key=len, reverse=True)
     pattern = re.compile(r'(' + '|'.join(re.escape(key) for key in pred) + r'|[()]|\d+\.\d+|\d+|j)')
 
@@ -332,7 +389,7 @@ def plus_minus(casti):
             casti[index] = "+"
             del casti[index + 1]
         elif casti[index] == '-' and casti[index + 1] not in znaky_vsetky:
-            if casti[index - 1] in list(znaky.keys()) + ["("]:
+            if casti[index - 1] in list(znaky.keys()) + ["("] + list(funkcie.keys()):
                 if float(casti[index + 1]) > 0:
                     del casti[index]
                     casti[index] = float(casti[index]) * -1
@@ -386,7 +443,7 @@ def pravidla():
         "π = hodnota matematickej konštanty Pi , funguje aj ked napišeš pi\n"
         "e = hodnota matematickej konštanty e\n"
         "j = hodota ktora je vyjadrená rovnicou j**2 = -1 , je to imaginare \n"
-        "dm = desatine miesta , dm = 2 π = 3.14 , dm = 3 π = 3.142n\n"
+        "dm = desatine miesta , dm = 2 π = 3.14 , dm = 3 π = 3.142 \n"
         "graf = Vo Graf_makery (grafery) moužete použivať X (Škálu x si môžte\n"
         "definovať od kadial do kadial)\n"
     )
@@ -398,12 +455,12 @@ def pravidla():
     lbl.pack(pady=10, padx=10)
 
 
-def zaklady_pocitania(priklad):
+def moj_eval(priklad):
     global postup
     try:
         priklad = priklad.lower()
         postup = []
-        casti = filter_2(priklad)
+        casti = moj_filter(priklad)
 
         result = convert(pocitaj(casti))
         return result
@@ -522,6 +579,8 @@ def history_root():
 if __name__ == '__main__':
     page = 0
     his_top = []
+    functions = []
+    colors = []
     root = Tk()
     root.title("Calculator")
     root.configure(bg="#282c34")
@@ -575,7 +634,7 @@ if __name__ == '__main__':
                "sec": sec, "csc": csc,
                "rad": rad, "deg": deg,
                "abs": abs, "!": faktorial,
-               "floor": floor, "ceil": ceil,
+               "floor": math.floor, "ceil": math.ceil,
                "round": round , "exp":exp10
                }
 
